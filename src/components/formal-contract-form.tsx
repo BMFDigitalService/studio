@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { ChevronDown, CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
@@ -89,6 +98,8 @@ export function FormalContractForm() {
   const { toast } = useToast();
   const [openSelectors, setOpenSelectors] = useState<Record<string, boolean>>({});
   const [isGenerating, setIsGenerating] = useState(false);
+  const [contractText, setContractText] = useState("");
+  const [isContractDialogOpen, setIsContractDialogOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -181,12 +192,14 @@ export function FormalContractForm() {
 
         const result = await generateContract(budget);
         
+        setContractText(result.contractText);
+        setIsContractDialogOpen(true);
+
         toast({
           title: "Contrato gerado com sucesso!",
-          description: "Seu contrato está sendo preparado para impressão.",
+          description: "Seu contrato está pronto para visualização e impressão.",
         });
 
-        handlePrint(result.contractText);
 
     } catch (error) {
         console.error("Erro ao gerar contrato:", error);
@@ -200,7 +213,7 @@ export function FormalContractForm() {
     }
   }
 
-  const handlePrint = (contractText: string) => {
+  const handlePrint = () => {
     if (!contractText) return;
     try {
       const printWindow = window.open('', '_blank');
@@ -272,6 +285,15 @@ export function FormalContractForm() {
   const toggleSelector = (serviceId: ServiceId) => {
     setOpenSelectors(prev => ({ ...prev, [serviceId]: !prev[serviceId] }));
   };
+
+  const contractHtml = contractText
+      .replace(/^### (.*$)/gim, '<h3 class="font-bold mt-4 mb-2">$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/- (.*?)(?=\n- |$)/g, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+      .replace(/\n/g, '<br />');
 
   return (
     <>
@@ -564,6 +586,26 @@ export function FormalContractForm() {
           </Button>
         </form>
       </Form>
+
+      <Dialog open={isContractDialogOpen} onOpenChange={setIsContractDialogOpen}>
+          <DialogContent className="max-w-4xl h-[90vh]">
+              <DialogHeader>
+                  <DialogTitle>Contrato de Prestação de Serviços</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="h-full">
+                <div className="p-6 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: contractHtml }} />
+              </ScrollArea>
+              <DialogFooter>
+                  <DialogClose asChild>
+                      <Button variant="outline">Fechar</Button>
+                  </DialogClose>
+                  <Button onClick={handlePrint}>Imprimir</Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
     </>
   );
 }
+
+
+    

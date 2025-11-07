@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,6 +17,7 @@ import {
 import { TeamForm } from "@/components/team-form";
 import { FormalContractForm } from "@/components/formal-contract-form";
 import { MessageSquare, Phone, FileText } from "lucide-react";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 export default function Home() {
   return (
@@ -82,3 +84,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
