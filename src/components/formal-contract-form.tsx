@@ -6,6 +6,8 @@ import { z } from "zod";
 import { useState, useMemo } from "react";
 import { format, differenceInCalendarDays, eachDayOfInterval, isSaturday, isSunday } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import jsPDF from "jspdf";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,6 +35,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/
 import { ScrollArea } from "./ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
+import { generateContract } from "@/ai/flows/generate-contract-flow";
 
 const services = [
   { id: "carga", label: "Carga" },
@@ -85,6 +88,7 @@ const calculateBusinessDays = (start: Date, end: Date) => {
 export function FormalContractForm() {
   const { toast } = useToast();
   const [openSelectors, setOpenSelectors] = useState<Record<string, boolean>>({});
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -141,41 +145,65 @@ export function FormalContractForm() {
     return total;
   }, [watchedServices, serviceQuantities, watchedStartDate, watchedEndDate, form]);
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    const budget = {
-        ...data,
-        totalCost: totalCost.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-        }),
-        servicesDetails: data.services.map(serviceId => {
-            const id = serviceId as ServiceId;
-            const price = servicePrices[id];
-            
-            if (id === 'diaria') {
-                const collaborators = serviceQuantities.diaria;
-                const days = (data.startDate && data.endDate) ? calculateBusinessDays(data.startDate, data.endDate) : 0;
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    setIsGenerating(true);
+    try {
+        const budget = {
+            ...data,
+            startDate: format(data.startDate, "dd/MM/yyyy", { locale: ptBR }),
+            endDate: format(data.endDate, "dd/MM/yyyy", { locale: ptBR }),
+            totalCost: totalCost.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+            }),
+            servicesDetails: data.services.map(serviceId => {
+                const id = serviceId as ServiceId;
+                const price = servicePrices[id];
+                
+                if (id === 'diaria') {
+                    const collaborators = serviceQuantities.diaria;
+                    const days = (data.startDate && data.endDate) ? calculateBusinessDays(data.startDate, data.endDate) : 0;
+                    return {
+                        service: services.find(s => s.id === id)?.label,
+                        quantity: `${collaborators} colaborador(es) por ${days} dia(s) úteis`,
+                        subtotal: (price * collaborators * days).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                    }
+                }
+                
+                const quantity = serviceQuantities[id];
                 return {
                     service: services.find(s => s.id === id)?.label,
-                    quantity: `${collaborators} colaborador(es) por ${days} dia(s) úteis`,
-                    subtotal: (price * collaborators * days).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                    quantity,
+                    subtotal: (quantity * price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
                 }
-            }
-            
-            const quantity = serviceQuantities[id];
-            return {
-                service: services.find(s => s.id === id)?.label,
-                quantity,
-                subtotal: (quantity * price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-            }
-        })
-    };
-    console.log(budget);
-    toast({
-      title: "Proposta enviada com sucesso!",
-      description: "Nossa equipe entrará em contato em breve para formalizar o contrato.",
-    });
-    form.reset();
+            })
+        };
+
+        const result = await generateContract(budget);
+
+        const doc = new jsPDF();
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        
+        const text = doc.splitTextToSize(result.contractText.replace(/###|##|#/g, ''), 180);
+        doc.text(text, 15, 20);
+        doc.save("Contrato_de_Servicos.pdf");
+        
+        toast({
+          title: "Contrato gerado com sucesso!",
+          description: "O download do seu contrato em PDF foi iniciado.",
+        });
+
+    } catch (error) {
+        console.error("Erro ao gerar contrato:", error);
+        toast({
+            variant: "destructive",
+            title: "Erro ao gerar contrato",
+            description: "Ocorreu um problema ao gerar o PDF. Por favor, tente novamente.",
+        });
+    } finally {
+        setIsGenerating(false);
+    }
   }
 
   const getQuantityFieldName = (serviceId: ServiceId) => {
@@ -486,8 +514,15 @@ export function FormalContractForm() {
             </div>
         </ScrollArea>
 
-        <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
-          Aceitar Proposta
+        <Button type="submit" disabled={isGenerating} className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Gerando Contrato...
+            </>
+          ) : (
+            "Aceitar Proposta"
+          )}
         </Button>
       </form>
     </Form>
