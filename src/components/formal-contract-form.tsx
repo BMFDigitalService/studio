@@ -7,7 +7,7 @@ import { useState, useMemo } from "react";
 import { format, differenceInCalendarDays, eachDayOfInterval, isSaturday, isSunday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import jsPDF from "jspdf";
-import { Loader2, Download, Printer } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,7 +35,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/
 import { ScrollArea } from "./ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { generateContract } from "@/ai/flows/generate-contract-flow";
 import type { GenerateContractInput } from "@/ai/flows/contract-schemas";
 
@@ -91,8 +90,6 @@ export function FormalContractForm() {
   const { toast } = useToast();
   const [openSelectors, setOpenSelectors] = useState<Record<string, boolean>>({});
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedContract, setGeneratedContract] = useState<string | null>(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -184,13 +181,13 @@ export function FormalContractForm() {
         };
 
         const result = await generateContract(budget);
-        setGeneratedContract(result.contractText);
-        setIsPreviewOpen(true);
         
         toast({
           title: "Contrato gerado com sucesso!",
-          description: "Seu contrato está pronto para visualização.",
+          description: "Seu contrato está sendo preparado para impressão.",
         });
+
+        handlePrint(result.contractText);
 
     } catch (error) {
         console.error("Erro ao gerar contrato:", error);
@@ -204,26 +201,15 @@ export function FormalContractForm() {
     }
   }
 
-  const handleDownloadPdf = () => {
-    if (!generatedContract) return;
-    const doc = new jsPDF();
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    
-    const text = doc.splitTextToSize(generatedContract.replace(/###|##|#/g, ''), 180);
-    doc.text(text, 15, 20);
-    doc.save("Contrato_de_Servicos.pdf");
-  };
-
-  const handlePrint = () => {
-    if (!generatedContract) return;
+  const handlePrint = (contractText: string) => {
+    if (!contractText) return;
     const printWindow = window.open('', '_blank');
     if (printWindow) {
         printWindow.document.write('<html><head><title>Contrato de Serviços</title>');
         printWindow.document.write('<style>body { font-family: sans-serif; white-space: pre-wrap; word-wrap: break-word; } h1, h2, h3 { margin-top: 1.5em; } ul { list-style-position: inside; padding-left: 0;} </style>');
         printWindow.document.write('</head><body>');
         // Simple markdown to HTML conversion
-        const htmlContract = generatedContract
+        const htmlContract = contractText
             .replace(/^### (.*$)/gim, '<h3>$1</h3>')
             .replace(/^## (.*$)/gim, '<h2>$1</h2>')
             .replace(/^# (.*$)/gim, '<h1>$1</h1>')
@@ -559,51 +545,6 @@ export function FormalContractForm() {
           </Button>
         </form>
       </Form>
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-3xl h-[90vh] flex flex-col">
-            <DialogHeader>
-                <DialogTitle>Pré-visualização do Contrato</DialogTitle>
-                <DialogDescription>
-                    Revise o contrato gerado. Você pode baixar em PDF ou imprimir.
-                </DialogDescription>
-            </DialogHeader>
-            <div className="flex-grow my-4 rounded-md border">
-                <ScrollArea className="h-full">
-                    <div
-                        className="p-8 prose prose-sm max-w-none"
-                        style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
-                        dangerouslySetInnerHTML={{
-                            __html: generatedContract
-                                ? generatedContract
-                                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                    .replace(/\n/g, '<br />')
-                                : ''
-                        }}
-                    />
-                </ScrollArea>
-            </div>
-            <DialogFooter className="sm:justify-between">
-                <DialogClose asChild>
-                    <Button type="button" variant="secondary">
-                        Fechar
-                    </Button>
-                </DialogClose>
-                <div className="flex gap-2">
-                    <Button onClick={handleDownloadPdf}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Baixar PDF
-                    </Button>
-                    <Button onClick={handlePrint}>
-                        <Printer className="mr-2 h-4 w-4" />
-                        Imprimir
-                    </Button>
-                </div>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
