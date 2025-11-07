@@ -216,8 +216,9 @@ export function FormalContractForm() {
   };
 
   const handlePrint = () => {
+    if (!generatedContract) return;
     const printWindow = window.open('', '_blank');
-    if (printWindow && generatedContract) {
+    if (printWindow) {
         printWindow.document.write('<html><head><title>Contrato de Serviços</title>');
         printWindow.document.write('<style>body { font-family: sans-serif; white-space: pre-wrap; word-wrap: break-word; } h1, h2, h3 { margin-top: 1.5em; } ul { list-style-position: inside; padding-left: 0;} </style>');
         printWindow.document.write('</head><body>');
@@ -233,6 +234,7 @@ export function FormalContractForm() {
         printWindow.document.close();
         printWindow.focus();
         printWindow.print();
+        printWindow.close();
     }
   };
 
@@ -565,10 +567,10 @@ export function FormalContractForm() {
                     Revise o contrato gerado. Você pode baixar em PDF ou imprimir.
                 </DialogDescription>
             </DialogHeader>
-            <div className="flex-grow bg-white my-4">
+            <div className="flex-grow my-4 rounded-md border">
                 <ScrollArea className="h-full">
                     <div
-                        className="p-8 prose prose-sm max-w-none text-black"
+                        className="p-8 prose prose-sm max-w-none"
                         style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
                         dangerouslySetInnerHTML={{
                             __html: generatedContract
