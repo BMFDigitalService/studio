@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { format, eachDayOfInterval, isSaturday, isSunday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
@@ -100,6 +101,7 @@ const calculateBusinessDays = (start: Date, end: Date) => {
 
 export function FormalContractForm() {
   const { toast } = useToast();
+  const router = useRouter();
   const [openSelectors, setOpenSelectors] = useState<Record<string, boolean>>({});
   const [isGenerating, setIsGenerating] = useState(false);
   const [contractText, setContractText] = useState("");
@@ -212,7 +214,7 @@ export function FormalContractForm() {
     }
   }
 
-  const handlePrint = () => {
+  const handleDownload = () => {
     if (!contractText) return;
     try {
       const doc = new jsPDF({
@@ -224,19 +226,22 @@ export function FormalContractForm() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
 
-      // Remove markdown bold and headers for processing
-      const cleanedText = contractText
-        .replace(/^#+ (.*$)/gim, '$1') // Remove headers
-        .replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
-
-      const textLines = doc.splitTextToSize(cleanedText, 180); // 180mm width for A4 with margins
-
-      let y = 20; // Initial Y position
-      const pageHeight = doc.internal.pageSize.height;
       const margin = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const usableWidth = pageWidth - 2 * margin;
+
+      // Process contract text to handle markdown-like syntax
+      const cleanedText = contractText
+        .replace(/^#+ (.*$)/gim, '\n$1\n') // Add space around headers
+        .replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold markdown
+
+      const textLines = doc.splitTextToSize(cleanedText, usableWidth);
+
+      let y = margin;
+      const pageHeight = doc.internal.pageSize.getHeight();
 
       for (let i = 0; i < textLines.length; i++) {
-        if (y > pageHeight - margin) {
+        if (y + 10 > pageHeight - margin) { // Check if new line exceeds page height
           doc.addPage();
           y = margin;
         }
@@ -245,6 +250,8 @@ export function FormalContractForm() {
       }
 
       doc.save("contrato-de-servicos.pdf");
+      setIsContractDialogOpen(false);
+      router.push('/thank-you');
       
     } catch (e) {
       console.error("Print error:", e);
@@ -290,13 +297,15 @@ export function FormalContractForm() {
   };
 
   const contractHtml = contractText
-      .replace(/^### (.*$)/gim, '<h3 class="font-bold mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>')
+      .replace(/^(#+) (.*$)/gim, (match, hashes, content) => {
+        const level = hashes.length;
+        return `<h${level} class="font-bold text-${4-level}xl mt-4 mb-2">${content}</h${level}>`;
+      })
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/- (.*?)(?=\n- |$)/gs, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+      .replace(/^- (.*)/gm, '<li>$1</li>')
+      .replace(/(\n?<li>.*<\/li>)/s, '<ul>$1</ul>')
       .replace(/\n/g, '<br />');
+
 
   return (
     <>
@@ -615,7 +624,7 @@ export function FormalContractForm() {
                   <DialogClose asChild>
                       <Button variant="outline">Fechar</Button>
                   </DialogClose>
-                  <Button onClick={handlePrint}>Baixar PDF</Button>
+                  <Button onClick={handleDownload}>Baixar PDF</Button>
               </DialogFooter>
           </DialogContent>
       </Dialog>
