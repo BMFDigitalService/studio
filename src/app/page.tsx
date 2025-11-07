@@ -29,7 +29,7 @@ export default function Home() {
           <DialogHeader>
             <DialogTitle>Fazer Parte da Equipe</DialogTitle>
             <DialogDescription>
-              Preencha o formulário abaixo para se candidatar a uma vaga em nossa equipe.
+              Preencha o formulário abaixo para fazer parte da equipe.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
