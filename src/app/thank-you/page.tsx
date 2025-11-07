@@ -106,12 +106,6 @@ export default function ThankYouPage() {
             </DialogContent>
           </Dialog>
 
-          <Link href="/">
-            <Button size="lg" variant="outline">
-              Voltar para a Página Inicial
-            </Button>
-          </Link>
-
         </div>
       </div>
     </div>
