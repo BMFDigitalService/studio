@@ -195,12 +195,6 @@ export function FormalContractForm() {
         setContractText(result.contractText);
         setIsContractDialogOpen(true);
 
-        toast({
-          title: "Contrato gerado com sucesso!",
-          description: "Seu contrato está pronto para visualização e impressão.",
-        });
-
-
     } catch (error) {
         console.error("Erro ao gerar contrato:", error);
         toast({
@@ -219,7 +213,7 @@ export function FormalContractForm() {
       const printWindow = window.open('', '_blank');
       if (printWindow) {
           printWindow.document.write('<html><head><title>Contrato de Serviços</title>');
-          printWindow.document.write('<style>body { font-family: sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 2cm; } h1, h2, h3 { margin-top: 1.5em; } ul { list-style-position: inside; padding-left: 0;} @page { size: A4; margin: 2cm; } </style>');
+          printWindow.document.write('<style>@media print { body { font-family: sans-serif; } @page { size: A4; margin: 2cm; } h1, h2, h3 { page-break-after: avoid; } p, ul, li { page-break-inside: avoid; } } body { font-family: sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 2cm; } h1, h2, h3 { margin-top: 1.5em; } ul { list-style-position: inside; padding-left: 0;}</style>');
           printWindow.document.write('</head><body>');
           
           const htmlContract = contractText
@@ -606,6 +600,7 @@ export function FormalContractForm() {
     </>
   );
 }
+
 
 
     
