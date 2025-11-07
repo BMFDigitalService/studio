@@ -42,7 +42,7 @@ const prompt = ai.definePrompt({
     **Estrutura do Contrato:**
     Gere um contrato em formato Markdown com as seguintes seções:
 
-    1.  **PARTES CONTRATANTES:** Identifique a CONTRATANTE (com os dados fornecidos, incluindo nome, CNPJ e endereço) e a CONTRATADA (GUSTAVO MANASSES ALBINO, CNPJ 44.743.063/0001-03, doravante denominada "Albino Prestação de Serviços").
+    1.  **PARTES CONTRATANTES:** Identifique a CONTRATANTE (com os dados fornecidos, incluindo nome, CNPJ e endereço) e a CONTRATADA (Albino Prestação de Serviços, nome fantasia de GUSTAVO MANASSES ALBINO, CNPJ 44.743.063/0001-03, com sede em Garuva, Santa Catarina, CEP 89248-000, doravante denominada "Contratada").
     2.  **OBJETO DO CONTRATO:** Descreva claramente os serviços que serão prestados, com base nos 'Serviços Contratados'.
     3.  **PRAZO:** Especifique o período de vigência do contrato usando as datas de início e fim.
     4.  **VALOR E FORMA DE PAGAMENTO:** Mencione o 'Custo Total' e especifique que o pagamento será realizado via PIX ou transferência bancária em até 5 dias úteis após a emissão da nota fiscal.
