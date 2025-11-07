@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { format, differenceInCalendarDays } from "date-fns";
+import { format, differenceInCalendarDays, eachDayOfInterval, isSaturday, isSunday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
@@ -75,6 +75,13 @@ const formSchema = z.object({
 
 type ServiceId = (typeof services)[number]["id"];
 
+const calculateBusinessDays = (start: Date, end: Date) => {
+    if (!start || !end || end < start) return 0;
+    const dateInterval = eachDayOfInterval({ start, end });
+    const businessDays = dateInterval.filter(day => !isSaturday(day) && !isSunday(day));
+    return businessDays.length;
+}
+
 export function FormalContractForm() {
   const { toast } = useToast();
   const [openSelectors, setOpenSelectors] = useState<Record<string, boolean>>({});
@@ -121,7 +128,7 @@ export function FormalContractForm() {
 
         if (id === 'diaria') {
             if (startDate && endDate) {
-                const days = differenceInCalendarDays(endDate, startDate) + 1;
+                const days = calculateBusinessDays(startDate, endDate);
                 const collaborators = serviceQuantities.diaria || 0;
                 total += price * collaborators * days;
             }
@@ -147,10 +154,10 @@ export function FormalContractForm() {
             
             if (id === 'diaria') {
                 const collaborators = serviceQuantities.diaria;
-                const days = (data.startDate && data.endDate) ? differenceInCalendarDays(data.endDate, data.startDate) + 1 : 0;
+                const days = (data.startDate && data.endDate) ? calculateBusinessDays(data.startDate, data.endDate) : 0;
                 return {
                     service: services.find(s => s.id === id)?.label,
-                    quantity: `${collaborators} colaborador(es) por ${days} dia(s)`,
+                    quantity: `${collaborators} colaborador(es) por ${days} dia(s) úteis`,
                     subtotal: (price * collaborators * days).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
                 }
             }
@@ -445,7 +452,7 @@ export function FormalContractForm() {
                                     
                                     if (id === 'diaria') {
                                         const collaborators = serviceQuantities.diaria;
-                                        const days = (watchedStartDate && watchedEndDate) ? differenceInCalendarDays(watchedEndDate, watchedStartDate) + 1 : 0;
+                                        const days = (watchedStartDate && watchedEndDate) ? calculateBusinessDays(watchedStartDate, watchedEndDate) : 0;
                                         if (days > 0 && collaborators > 0) {
                                             subtotal = price * collaborators * days;
                                             labelText = `${service.label} (${collaborators} x ${days}d)`;
@@ -486,3 +493,5 @@ export function FormalContractForm() {
     </Form>
   );
 }
+
+    
