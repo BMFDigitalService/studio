@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Albino Logistics",
+  title: "Albino Prestação de Serviços",
   description: "Contratação de serviços e vagas de equipe.",
 };
 
