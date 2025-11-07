@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 const services = [
   { id: "carga", label: "Carga" },
@@ -56,6 +58,7 @@ type ServiceId = (typeof services)[number]["id"];
 
 export function FormalContractForm() {
   const { toast } = useToast();
+  const [openSelectors, setOpenSelectors] = useState<Record<string, boolean>>({});
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -121,6 +124,10 @@ export function FormalContractForm() {
     }
   };
 
+  const toggleSelector = (serviceId: ServiceId) => {
+    setOpenSelectors(prev => ({ ...prev, [serviceId]: !prev[serviceId] }));
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -179,6 +186,7 @@ export function FormalContractForm() {
                   const isSelected = watchedServices.includes(item.id);
                   const quantityFieldName = getQuantityFieldName(item.id);
                   const quantityValue = serviceQuantities[item.id];
+                  const isSelectorOpen = openSelectors[item.id];
 
                   return (
                     <div key={item.id}>
@@ -201,15 +209,20 @@ export function FormalContractForm() {
                             <FormLabel className={cn("font-normal flex-grow", isSelected && "font-medium")}>
                               {item.label}
                             </FormLabel>
-                            {isSelected && quantityValue && (
-                              <span className="text-sm font-medium text-muted-foreground ml-auto pr-2">
-                                Qtd: {quantityValue}
-                              </span>
+                            {isSelected && (
+                              <div className="ml-auto flex items-center gap-2">
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  Qtd: {quantityValue}
+                                </span>
+                                <button type="button" onClick={() => toggleSelector(item.id)} className="p-1">
+                                  <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isSelectorOpen && "rotate-180")} />
+                                </button>
+                              </div>
                             )}
                           </FormItem>
                         )}
                       />
-                      {isSelected && (
+                      {isSelected && isSelectorOpen && (
                          <div className="pt-2 pl-7">
                           <FormField
                             control={form.control}
@@ -218,7 +231,10 @@ export function FormalContractForm() {
                               <FormItem>
                                 <FormLabel className="text-xs text-muted-foreground">{getQuantityLabel(item.id)}</FormLabel>
                                 <Select
-                                  onValueChange={field.onChange}
+                                  onValueChange={(value) => {
+                                    field.onChange(value);
+                                    toggleSelector(item.id);
+                                  }}
                                   value={field.value}
                                 >
                                   <FormControl>
