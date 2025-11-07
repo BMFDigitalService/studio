@@ -8,6 +8,7 @@ import { useState, useMemo } from "react";
 import { format, eachDayOfInterval, isSaturday, isSunday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
+import { jsPDF } from "jspdf";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -210,42 +211,46 @@ export function FormalContractForm() {
   const handlePrint = () => {
     if (!contractText) return;
     try {
-      const printWindow = window.open('', '', 'height=800,width=800');
-      if (printWindow) {
-          printWindow.document.write('<html><head><title>Contrato de Serviços</title>');
-          printWindow.document.write('<style>@media print { body { font-family: sans-serif; } @page { size: A4; margin: 2cm; } h1, h2, h3 { page-break-after: avoid; } p, ul, li { page-break-inside: avoid; } } body { font-family: sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 2cm; }</style>');
-          printWindow.document.write('</head><body>');
-          
-          const htmlContract = contractText
-              .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-              .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-              .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-              .replace(/\n/g, '<br />');
+      const doc = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: "a4",
+      });
 
-          printWindow.document.write(htmlContract);
-          printWindow.document.write('</body></html>');
-          printWindow.document.close();
-          printWindow.focus();
-          
-          setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-          }, 250);
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erro ao abrir janela de impressão",
-          description: "Não foi possível abrir a janela. Verifique se o bloqueador de pop-ups do seu navegador está desativado.",
-          duration: 9000,
-        });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+
+      // Remove markdown bold and headers for processing
+      const cleanedText = contractText
+        .replace(/^#+ (.*$)/gim, '$1') // Remove headers
+        .replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
+
+      const textLines = doc.splitTextToSize(cleanedText, 180); // 180mm width for A4 with margins
+
+      let y = 20; // Initial Y position
+      const pageHeight = doc.internal.pageSize.height;
+      const margin = 20;
+
+      for (let i = 0; i < textLines.length; i++) {
+        if (y > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(textLines[i], margin, y);
+        y += 7; // Line height
       }
-    } catch(e) {
+
+      doc.save("contrato-de-servicos.pdf");
+      
+    } catch (e) {
       console.error("Print error:", e);
       toast({
         variant: "destructive",
-        title: "Erro de Impressão",
-        description: e instanceof Error ? e.message : "Ocorreu um problema ao tentar imprimir o contrato. Por favor, tente novamente."
+        title: "Erro ao gerar PDF",
+        description:
+          e instanceof Error
+            ? e.message
+            : "Ocorreu um problema ao tentar gerar o PDF do contrato.",
       });
     }
   };
@@ -593,12 +598,10 @@ export function FormalContractForm() {
                   <DialogClose asChild>
                       <Button variant="outline">Fechar</Button>
                   </DialogClose>
-                  <Button onClick={handlePrint}>Imprimir</Button>
+                  <Button onClick={handlePrint}>Baixar PDF</Button>
               </DialogFooter>
           </DialogContent>
       </Dialog>
     </>
   );
 }
-
-    
