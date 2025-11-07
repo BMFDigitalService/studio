@@ -221,13 +221,17 @@ export function FormalContractForm() {
           printWindow.document.close();
           printWindow.focus();
           
-          // Give the browser a moment to render before printing
           setTimeout(() => {
             printWindow.print();
             printWindow.close();
           }, 250);
       } else {
-        throw new Error("Não foi possível abrir a janela de impressão. Verifique se o bloqueador de pop-ups está desativado.");
+        toast({
+          variant: "destructive",
+          title: "Erro ao abrir janela de impressão",
+          description: "Não foi possível abrir a janela. Verifique se o bloqueador de pop-ups do seu navegador está desativado.",
+          duration: 9000,
+        });
       }
     } catch(e) {
       console.error("Print error:", e);
