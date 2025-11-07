@@ -9,10 +9,10 @@ export default function ThankYouPage() {
       <div className="max-w-md space-y-4">
         <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Contrato Gerado com Sucesso!
+          Sucesso!
         </h1>
         <p className="text-lg text-muted-foreground">
-          O seu contrato em PDF foi baixado. Agradecemos por utilizar nossos serviços.
+          Um representante de nossa equipe irá até você para assinar o contrato presencialmente.
         </p>
         <div className="pt-4">
           <Link href="/">
