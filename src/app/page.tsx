@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,81 +7,130 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { TeamForm } from "@/components/team-form";
+import { FormalContractForm } from "@/components/formal-contract-form";
+import { ChevronRight, MessageSquare, Phone, FileText } from "lucide-react";
+import Image from "next/image";
+import { placeholderImages } from "@/lib/placeholder-images";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TeamForm } from "@/components/team-form";
-import { FormalContractForm } from "@/components/formal-contract-form";
-import { MessageSquare, Phone, FileText } from "lucide-react";
-import { DialogClose } from "@radix-ui/react-dialog";
+import { Icons } from "@/components/icons";
 
 export default function Home() {
-  return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-4 p-4">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-            Contratar Serviços
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem>
-            <a href="https://wa.me/5511999998888" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-              <MessageSquare />
-              <span>WhatsApp</span>
-            </a>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <a href="tel:+5511999998888" className="flex items-center gap-2">
-              <Phone />
-              <span>Ligação</span>
-            </a>
-          </DropdownMenuItem>
-          <Dialog>
-            <DialogTrigger asChild>
-                <div className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-                    <FileText />
-                    <span>Contrato Formal</span>
-                </div>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md rounded-lg p-0">
-              <DialogHeader className="p-6 pb-0">
-                <DialogTitle>Contrato Formal</DialogTitle>
-                <DialogDescription>
-                  Preencha o formulário para um contato formal.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="py-4 px-1">
-                <FormalContractForm />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </DropdownMenuContent>
-      </DropdownMenu>
+  const heroImage = placeholderImages.find(p => p.id === 'hero-logistics');
 
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button size="lg" variant="secondary">
-            Fazer Parte da Equipe
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px] rounded-lg">
-          <DialogHeader>
-            <DialogTitle>Fazer Parte da Equipe</DialogTitle>
-            <DialogDescription>
-              Preencha o formulário abaixo para fazer parte da equipe.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <TeamForm />
+  return (
+    <div className="flex flex-col min-h-dvh bg-background">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Icons.forklift className="h-7 w-7 text-primary" />
+              <span className="text-xl font-bold tracking-tighter text-foreground">
+                ALBINO
+              </span>
+            </div>
+            <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+              <a href="#services" className="text-foreground/80 hover:text-foreground">Serviços</a>
+              <a href="#team" className="text-foreground/80 hover:text-foreground">Equipe</a>
+              <a href="#contact" className="text-foreground/80 hover:text-foreground">Contato</a>
+            </nav>
+            <div className="flex items-center gap-4">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm">Fazer Parte da Equipe</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] rounded-lg">
+                  <DialogHeader>
+                    <DialogTitle>Fazer Parte da Equipe</DialogTitle>
+                    <DialogDescription>
+                      Preencha o formulário abaixo para fazer parte da equipe.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <TeamForm />
+                  </div>
+                </DialogContent>
+              </Dialog>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm">Contratar Serviços</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md rounded-lg p-0">
+                  <DialogHeader className="p-6 pb-0">
+                    <DialogTitle>Contrato Formal</DialogTitle>
+                    <DialogDescription>
+                      Preencha o formulário para um contato formal.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4 px-1">
+                    <FormalContractForm />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </header>
+
+      <main className="flex-grow pt-16">
+        <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center text-center text-white">
+          {heroImage && (
+            <Image
+              src={heroImage.imageUrl}
+              alt={heroImage.description}
+              fill
+              className="object-cover"
+              priority
+              data-ai-hint={heroImage.imageHint}
+            />
+          )}
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative z-10 p-4">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl">
+              Logística Eficiente, Resultados Extraordinários.
+            </h1>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-white/80">
+              Soluções completas em carga, descarga e transbordo para otimizar sua operação.
+            </p>
+            <div className="mt-8 flex justify-center gap-4">
+               <Dialog>
+                <DialogTrigger asChild>
+                   <Button size="lg">
+                    Iniciar Orçamento
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md rounded-lg p-0">
+                  <DialogHeader className="p-6 pb-0">
+                    <DialogTitle>Contrato Formal</DialogTitle>
+                    <DialogDescription>
+                      Preencha o formulário para um contato formal.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4 px-1">
+                    <FormalContractForm />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </section>
+
+        {/* Other sections can be added here */}
+
+      </main>
+      
+      <footer className="bg-secondary">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-secondary-foreground">
+            <p>&copy; {new Date().getFullYear()} Albino Prestação de Serviços. Todos os direitos reservados.</p>
+          </div>
+      </footer>
     </div>
   );
 }
-
-    
