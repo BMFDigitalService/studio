@@ -210,10 +210,10 @@ export function FormalContractForm() {
   const handlePrint = () => {
     if (!contractText) return;
     try {
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open('', '', 'height=800,width=800');
       if (printWindow) {
           printWindow.document.write('<html><head><title>Contrato de Serviços</title>');
-          printWindow.document.write('<style>@media print { body { font-family: sans-serif; } @page { size: A4; margin: 2cm; } h1, h2, h3 { page-break-after: avoid; } p, ul, li { page-break-inside: avoid; } } body { font-family: sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 2cm; } h1, h2, h3 { margin-top: 1.5em; } ul { list-style-position: inside; padding-left: 0;}</style>');
+          printWindow.document.write('<style>@media print { body { font-family: sans-serif; } @page { size: A4; margin: 2cm; } h1, h2, h3 { page-break-after: avoid; } p, ul, li { page-break-inside: avoid; } } body { font-family: sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 2cm; }</style>');
           printWindow.document.write('</head><body>');
           
           const htmlContract = contractText
@@ -285,7 +285,7 @@ export function FormalContractForm() {
       .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
       .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/- (.*?)(?=\n- |$)/g, '<li>$1</li>')
+      .replace(/- (.*?)(?=\n- |$)/gs, '<li>$1</li>')
       .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
       .replace(/\n/g, '<br />');
 
@@ -600,7 +600,5 @@ export function FormalContractForm() {
     </>
   );
 }
-
-
 
     
