@@ -4,9 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { format, differenceInCalendarDays, eachDayOfInterval, isSaturday, isSunday } from "date-fns";
+import { format, eachDayOfInterval, isSaturday, isSunday } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import jsPDF from "jspdf";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -203,24 +202,40 @@ export function FormalContractForm() {
 
   const handlePrint = (contractText: string) => {
     if (!contractText) return;
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-        printWindow.document.write('<html><head><title>Contrato de Serviços</title>');
-        printWindow.document.write('<style>body { font-family: sans-serif; white-space: pre-wrap; word-wrap: break-word; } h1, h2, h3 { margin-top: 1.5em; } ul { list-style-position: inside; padding-left: 0;} </style>');
-        printWindow.document.write('</head><body>');
-        // Simple markdown to HTML conversion
-        const htmlContract = contractText
-            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\n/g, '<br />');
-        printWindow.document.write(htmlContract);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
+    try {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+          printWindow.document.write('<html><head><title>Contrato de Serviços</title>');
+          printWindow.document.write('<style>body { font-family: sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 2cm; } h1, h2, h3 { margin-top: 1.5em; } ul { list-style-position: inside; padding-left: 0;} @page { size: A4; margin: 2cm; } </style>');
+          printWindow.document.write('</head><body>');
+          
+          const htmlContract = contractText
+              .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+              .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+              .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+              .replace(/\n/g, '<br />');
+
+          printWindow.document.write(htmlContract);
+          printWindow.document.write('</body></html>');
+          printWindow.document.close();
+          printWindow.focus();
+          
+          // Give the browser a moment to render before printing
+          setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+          }, 250);
+      } else {
+        throw new Error("Não foi possível abrir a janela de impressão. Verifique se o bloqueador de pop-ups está desativado.");
+      }
+    } catch(e) {
+      console.error("Print error:", e);
+      toast({
+        variant: "destructive",
+        title: "Erro de Impressão",
+        description: e instanceof Error ? e.message : "Ocorreu um problema ao tentar imprimir o contrato. Por favor, tente novamente."
+      });
     }
   };
 
