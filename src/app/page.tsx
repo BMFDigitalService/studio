@@ -22,23 +22,23 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-lg">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex flex-col items-center">
-                <span className="text-xs font-light tracking-widest text-foreground/80">
+                <span className="text-xs font-light tracking-widest text-white/80">
                   CARGA/DESCARGA
                 </span>
-                <span className="text-4xl font-bold tracking-tighter text-foreground leading-none">
+                <span className="text-4xl font-bold tracking-tighter text-white leading-none">
                   ALBINO
                 </span>
               </Link>
             </div>
             <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
-              <a href="#services" className="text-foreground/80 hover:text-foreground">Serviços</a>
-              <a href="#team" className="text-foreground/80 hover:text-foreground">Equipe</a>
-              <a href="#contact" className="text-foreground/80 hover:text-foreground">Contato</a>
+              <a href="#services" className="text-white/80 hover:text-white">Serviços</a>
+              <a href="#team" className="text-white/80 hover:text-white">Equipe</a>
+              <a href="#contact" className="text-white/80 hover:text-white">Contato</a>
             </nav>
           </div>
         </div>
