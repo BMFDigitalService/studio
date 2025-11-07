@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
+import { ScrollArea } from "./ui/scroll-area";
 
 const services = [
   { id: "carga", label: "Carga" },
@@ -165,170 +166,174 @@ export function FormalContractForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="companyName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome da Empresa</FormLabel>
-              <FormControl>
-                <Input placeholder="Nome da sua empresa" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="cnpj"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>CNPJ</FormLabel>
-              <FormControl>
-                <Input placeholder="00.000.000/0000-00" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="responsibleName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome do Responsável</FormLabel>
-              <FormControl>
-                <Input placeholder="Nome do responsável pela contratação" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="services"
-          render={() => (
-            <FormItem>
-              <div className="mb-4">
-                <FormLabel>Tipo de Serviços</FormLabel>
-                <FormDescription>
-                  Selecione os serviços que você precisa.
-                </FormDescription>
-              </div>
-              <div className="space-y-4">
-                {services.map((item) => {
-                  const isSelected = watchedServices.includes(item.id);
-                  const quantityFieldName = getQuantityFieldName(item.id);
-                  const quantityValue = serviceQuantities[item.id];
-                  const isSelectorOpen = openSelectors[item.id];
+        <ScrollArea className="h-[60vh] md:h-auto">
+            <div className="space-y-6 pr-4">
+                <FormField
+                control={form.control}
+                name="companyName"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Nome da Empresa</FormLabel>
+                    <FormControl>
+                        <Input placeholder="Nome da sua empresa" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="cnpj"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>CNPJ</FormLabel>
+                    <FormControl>
+                        <Input placeholder="00.000.000/0000-00" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="responsibleName"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Nome do Responsável</FormLabel>
+                    <FormControl>
+                        <Input placeholder="Nome do responsável pela contratação" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="services"
+                render={() => (
+                    <FormItem>
+                    <div className="mb-4">
+                        <FormLabel>Tipo de Serviços</FormLabel>
+                        <FormDescription>
+                        Selecione os serviços que você precisa.
+                        </FormDescription>
+                    </div>
+                    <div className="space-y-4">
+                        {services.map((item) => {
+                        const isSelected = watchedServices.includes(item.id);
+                        const quantityFieldName = getQuantityFieldName(item.id);
+                        const quantityValue = serviceQuantities[item.id];
+                        const isSelectorOpen = openSelectors[item.id];
 
-                  return (
-                    <div key={item.id}>
-                      <FormField
-                        control={form.control}
-                        name="services"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(item.id)}
-                                onCheckedChange={(checked) => {
-                                  const newValue = checked
-                                    ? [...field.value, item.id]
-                                    : field.value?.filter((value) => value !== item.id);
-                                  field.onChange(newValue);
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className={cn("font-normal flex-grow", isSelected && "font-medium")}>
-                              {item.label}
-                            </FormLabel>
-                            {isSelected && (
-                              <div className="ml-auto flex items-center gap-2">
-                                <span className="text-sm font-medium text-muted-foreground">
-                                  Qtd: {quantityValue}
-                                </span>
-                                <button type="button" onClick={() => toggleSelector(item.id)} className="p-1">
-                                  <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isSelectorOpen && "rotate-180")} />
-                                </button>
-                              </div>
-                            )}
-                          </FormItem>
-                        )}
-                      />
-                      {isSelected && isSelectorOpen && (
-                         <div className="pt-2 pl-7">
-                          <FormField
-                            control={form.control}
-                            name={quantityFieldName as any}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-xs text-muted-foreground">{getQuantityLabel(item.id)}</FormLabel>
-                                <Select
-                                  onValueChange={(value) => {
-                                    field.onChange(value);
-                                    toggleSelector(item.id);
-                                  }}
-                                  value={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Selecione a quantidade" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {[...Array(10)].map((_, i) => (
-                                      <SelectItem key={i + 1} value={`${i + 1}`}>
-                                        {i + 1}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {totalCost > 0 && (
-            <Card className="bg-muted/50">
-                <CardHeader className="p-4">
-                    <CardTitle className="text-lg">Orçamento</CardTitle>
-                    <CardDescription>Resumo dos custos dos serviços selecionados.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                    <div className="space-y-2">
-                        {watchedServices.map(serviceId => {
-                            const id = serviceId as ServiceId;
-                            const service = services.find(s => s.id === id);
-                            const quantity = serviceQuantities[id];
-                            const price = servicePrices[id];
-                            if (!service || quantity === 0) return null;
-                            return (
-                                <div key={id} className="flex justify-between text-sm">
-                                    <span>{service.label} (x{quantity})</span>
-                                    <span>{(price * quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        return (
+                            <div key={item.id}>
+                            <FormField
+                                control={form.control}
+                                name="services"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                    <Checkbox
+                                        checked={field.value?.includes(item.id)}
+                                        onCheckedChange={(checked) => {
+                                        const newValue = checked
+                                            ? [...field.value, item.id]
+                                            : field.value?.filter((value) => value !== item.id);
+                                        field.onChange(newValue);
+                                        }}
+                                    />
+                                    </FormControl>
+                                    <FormLabel className={cn("font-normal flex-grow", isSelected && "font-medium")}>
+                                    {item.label}
+                                    </FormLabel>
+                                    {isSelected && (
+                                    <div className="ml-auto flex items-center gap-2">
+                                        <span className="text-sm font-medium text-muted-foreground">
+                                        Qtd: {quantityValue}
+                                        </span>
+                                        <button type="button" onClick={() => toggleSelector(item.id)} className="p-1">
+                                        <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isSelectorOpen && "rotate-180")} />
+                                        </button>
+                                    </div>
+                                    )}
+                                </FormItem>
+                                )}
+                            />
+                            {isSelected && isSelectorOpen && (
+                                <div className="pt-2 pl-7">
+                                <FormField
+                                    control={form.control}
+                                    name={quantityFieldName as any}
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs text-muted-foreground">{getQuantityLabel(item.id)}</FormLabel>
+                                        <Select
+                                        onValueChange={(value) => {
+                                            field.onChange(value);
+                                            toggleSelector(item.id);
+                                        }}
+                                        value={field.value}
+                                        >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                            <SelectValue placeholder="Selecione a quantidade" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {[...Array(10)].map((_, i) => (
+                                            <SelectItem key={i + 1} value={`${i + 1}`}>
+                                                {i + 1}
+                                            </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
                                 </div>
-                            )
+                            )}
+                            </div>
+                        );
                         })}
-                        <div className="border-t border-border my-2"></div>
-                        <div className="flex justify-between font-bold text-base">
-                            <span>Total</span>
-                            <span>{totalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                        </div>
                     </div>
-                </CardContent>
-            </Card>
-        )}
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                
+                {totalCost > 0 && (
+                    <Card className="bg-muted/50">
+                        <CardHeader className="p-4">
+                            <CardTitle className="text-lg">Orçamento</CardTitle>
+                            <CardDescription>Resumo dos custos dos serviços selecionados.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                            <div className="space-y-2">
+                                {watchedServices.map(serviceId => {
+                                    const id = serviceId as ServiceId;
+                                    const service = services.find(s => s.id === id);
+                                    const quantity = serviceQuantities[id];
+                                    const price = servicePrices[id];
+                                    if (!service || quantity === 0) return null;
+                                    return (
+                                        <div key={id} className="flex justify-between text-sm">
+                                            <span>{service.label} (x{quantity})</span>
+                                            <span>{(price * quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                        </div>
+                                    )
+                                })}
+                                <div className="border-t border-border my-2"></div>
+                                <div className="flex justify-between font-bold text-base">
+                                    <span>Total</span>
+                                    <span>{totalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+        </ScrollArea>
 
         <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
           Enviar Proposta

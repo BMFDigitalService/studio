@@ -46,14 +46,14 @@ export default function Home() {
                     <span>Contrato Formal</span>
                 </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md rounded-lg">
-              <DialogHeader>
+            <DialogContent className="sm:max-w-md rounded-lg p-0">
+              <DialogHeader className="p-6 pb-0">
                 <DialogTitle>Contrato Formal</DialogTitle>
                 <DialogDescription>
                   Preencha o formulário para um contato formal.
                 </DialogDescription>
               </DialogHeader>
-              <div className="py-4">
+              <div className="py-4 px-1">
                 <FormalContractForm />
               </div>
             </DialogContent>
