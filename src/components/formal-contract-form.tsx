@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 
 const services = [
   { id: "carga", label: "Carga" },
@@ -34,6 +35,13 @@ const services = [
   { id: "transbordo", label: "Transbordo" },
   { id: "diaria", label: "Diária" },
 ] as const;
+
+const servicePrices: Record<(typeof services)[number]["id"], number> = {
+    carga: 600,
+    descarga: 550,
+    transbordo: 650,
+    diaria: 220,
+};
 
 const formSchema = z.object({
   companyName: z.string().min(2, {
@@ -82,15 +90,41 @@ export function FormalContractForm() {
     "numberOfCollaborators",
   ]);
 
-  const serviceQuantities: Record<ServiceId, string | undefined> = {
-    carga: watchedQuantities[0],
-    descarga: watchedQuantities[1],
-    transbordo: watchedQuantities[2],
-    diaria: watchedQuantities[3],
+  const serviceQuantities: Record<ServiceId, number> = {
+    carga: parseInt(watchedQuantities[0] || "0"),
+    descarga: parseInt(watchedQuantities[1] || "0"),
+    transbordo: parseInt(watchedQuantities[2] || "0"),
+    diaria: parseInt(watchedQuantities[3] || "0"),
   };
 
+  const totalCost = useMemo(() => {
+    return watchedServices.reduce((total, serviceId) => {
+      const id = serviceId as ServiceId;
+      const price = servicePrices[id];
+      const quantity = serviceQuantities[id] || 0;
+      return total + (price * quantity);
+    }, 0);
+  }, [watchedServices, serviceQuantities]);
+
   function onSubmit(data: z.infer<typeof formSchema>) {
-    console.log(data);
+    const budget = {
+        ...data,
+        totalCost: totalCost.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+        }),
+        servicesDetails: data.services.map(serviceId => {
+            const id = serviceId as ServiceId;
+            const quantity = serviceQuantities[id];
+            const price = servicePrices[id];
+            return {
+                service: services.find(s => s.id === id)?.label,
+                quantity,
+                subtotal: (quantity * price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+            }
+        })
+    };
+    console.log(budget);
     toast({
       title: "Proposta enviada com sucesso!",
       description: "Nossa equipe entrará em contato em breve para formalizar o contrato.",
@@ -226,7 +260,7 @@ export function FormalContractForm() {
                          <div className="pt-2 pl-7">
                           <FormField
                             control={form.control}
-                            name={quantityFieldName}
+                            name={quantityFieldName as any}
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs text-muted-foreground">{getQuantityLabel(item.id)}</FormLabel>
@@ -265,6 +299,37 @@ export function FormalContractForm() {
           )}
         />
         
+        {totalCost > 0 && (
+            <Card className="bg-muted/50">
+                <CardHeader className="p-4">
+                    <CardTitle className="text-lg">Orçamento</CardTitle>
+                    <CardDescription>Resumo dos custos dos serviços selecionados.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                    <div className="space-y-2">
+                        {watchedServices.map(serviceId => {
+                            const id = serviceId as ServiceId;
+                            const service = services.find(s => s.id === id);
+                            const quantity = serviceQuantities[id];
+                            const price = servicePrices[id];
+                            if (!service || quantity === 0) return null;
+                            return (
+                                <div key={id} className="flex justify-between text-sm">
+                                    <span>{service.label} (x{quantity})</span>
+                                    <span>{(price * quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                </div>
+                            )
+                        })}
+                        <div className="border-t border-border my-2"></div>
+                        <div className="flex justify-between font-bold text-base">
+                            <span>Total</span>
+                            <span>{totalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        )}
+
         <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
           Enviar Proposta
         </Button>
