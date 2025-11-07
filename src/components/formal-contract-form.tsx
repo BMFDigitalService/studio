@@ -17,6 +17,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const services = [
   { id: "carga", label: "Carga" },
@@ -38,6 +45,7 @@ const formSchema = z.object({
   services: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "Você deve selecionar pelo menos um serviço.",
   }),
+  numberOfCollaborators: z.string().optional(),
 });
 
 export function FormalContractForm() {
@@ -50,8 +58,11 @@ export function FormalContractForm() {
       cnpj: "",
       responsibleName: "",
       services: [],
+      numberOfCollaborators: "1",
     },
   });
+
+  const watchedServices = form.watch("services");
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     console.log(data);
@@ -154,6 +165,35 @@ export function FormalContractForm() {
             </FormItem>
           )}
         />
+        {watchedServices.includes("diaria") && (
+          <FormField
+            control={form.control}
+            name="numberOfCollaborators"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantidade de Colaboradores</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a quantidade" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {[...Array(10)].map((_, i) => (
+                      <SelectItem key={i + 1} value={`${i + 1}`}>
+                        {i + 1}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
           Enviar Proposta
         </Button>
