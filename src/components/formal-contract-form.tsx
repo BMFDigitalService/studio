@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
@@ -100,6 +100,8 @@ export function FormalContractForm() {
     "quantityTransbordo",
     "numberOfCollaborators",
   ]);
+  const watchedStartDate = form.watch("startDate");
+  const watchedEndDate = form.watch("endDate");
 
   const serviceQuantities: Record<ServiceId, number> = {
     carga: parseInt(watchedQuantities[0] || "0"),
@@ -109,13 +111,28 @@ export function FormalContractForm() {
   };
 
   const totalCost = useMemo(() => {
-    return watchedServices.reduce((total, serviceId) => {
-      const id = serviceId as ServiceId;
-      const price = servicePrices[id];
-      const quantity = serviceQuantities[id] || 0;
-      return total + (price * quantity);
-    }, 0);
-  }, [watchedServices, serviceQuantities]);
+    let total = 0;
+    const startDate = form.getValues("startDate");
+    const endDate = form.getValues("endDate");
+    
+    watchedServices.forEach((serviceId) => {
+        const id = serviceId as ServiceId;
+        const price = servicePrices[id];
+
+        if (id === 'diaria') {
+            if (startDate && endDate) {
+                const days = differenceInCalendarDays(endDate, startDate) + 1;
+                const collaborators = serviceQuantities.diaria || 0;
+                total += price * collaborators * days;
+            }
+        } else {
+            const quantity = serviceQuantities[id] || 0;
+            total += price * quantity;
+        }
+    });
+
+    return total;
+  }, [watchedServices, serviceQuantities, watchedStartDate, watchedEndDate, form]);
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     const budget = {
@@ -126,8 +143,19 @@ export function FormalContractForm() {
         }),
         servicesDetails: data.services.map(serviceId => {
             const id = serviceId as ServiceId;
-            const quantity = serviceQuantities[id];
             const price = servicePrices[id];
+            
+            if (id === 'diaria') {
+                const collaborators = serviceQuantities.diaria;
+                const days = (data.startDate && data.endDate) ? differenceInCalendarDays(data.endDate, data.startDate) + 1 : 0;
+                return {
+                    service: services.find(s => s.id === id)?.label,
+                    quantity: `${collaborators} colaborador(es) por ${days} dia(s)`,
+                    subtotal: (price * collaborators * days).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                }
+            }
+            
+            const quantity = serviceQuantities[id];
             return {
                 service: services.find(s => s.id === id)?.label,
                 quantity,
@@ -409,13 +437,33 @@ export function FormalContractForm() {
                                 {watchedServices.map(serviceId => {
                                     const id = serviceId as ServiceId;
                                     const service = services.find(s => s.id === id);
-                                    const quantity = serviceQuantities[id];
                                     const price = servicePrices[id];
-                                    if (!service || quantity === 0) return null;
+                                    if (!service) return null;
+                                    
+                                    let subtotal = 0;
+                                    let labelText = "";
+                                    
+                                    if (id === 'diaria') {
+                                        const collaborators = serviceQuantities.diaria;
+                                        const days = (watchedStartDate && watchedEndDate) ? differenceInCalendarDays(watchedEndDate, watchedStartDate) + 1 : 0;
+                                        if (days > 0 && collaborators > 0) {
+                                            subtotal = price * collaborators * days;
+                                            labelText = `${service.label} (${collaborators} x ${days}d)`;
+                                        }
+                                    } else {
+                                        const quantity = serviceQuantities[id];
+                                        if (quantity > 0) {
+                                            subtotal = price * quantity;
+                                            labelText = `${service.label} (x${quantity})`;
+                                        }
+                                    }
+
+                                    if (subtotal === 0) return null;
+
                                     return (
                                         <div key={id} className="flex justify-between text-sm">
-                                            <span>{service.label} (x{quantity})</span>
-                                            <span>{(price * quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                            <span>{labelText}</span>
+                                            <span>{subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                                         </div>
                                     )
                                 })}
@@ -438,5 +486,3 @@ export function FormalContractForm() {
     </Form>
   );
 }
-
-    
