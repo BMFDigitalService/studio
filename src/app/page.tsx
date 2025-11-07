@@ -25,7 +25,7 @@ export default function Home() {
             Fazer Parte da Equipe
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] rounded-lg">
           <DialogHeader>
             <DialogTitle>Fazer Parte da Equipe</DialogTitle>
             <DialogDescription>
