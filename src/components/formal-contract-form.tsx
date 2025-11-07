@@ -36,6 +36,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { generateContract } from "@/ai/flows/generate-contract-flow";
+import type { GenerateContractInput } from "@/ai/flows/contract-schemas";
 
 const services = [
   { id: "carga", label: "Carga" },
@@ -148,7 +149,7 @@ export function FormalContractForm() {
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsGenerating(true);
     try {
-        const budget = {
+        const budget: GenerateContractInput = {
             ...data,
             startDate: format(data.startDate, "dd/MM/yyyy", { locale: ptBR }),
             endDate: format(data.endDate, "dd/MM/yyyy", { locale: ptBR }),
@@ -528,5 +529,3 @@ export function FormalContractForm() {
     </Form>
   );
 }
-
-    
