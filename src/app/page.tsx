@@ -92,12 +92,6 @@ export default function Home() {
           )}
           <div className="absolute inset-0 bg-black/50" />
           <div className="relative z-10 p-4">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl">
-              Logística Eficiente, Resultados Extraordinários.
-            </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-lg text-white/80">
-              Soluções completas em carga, descarga e transbordo para otimizar sua operação.
-            </p>
             <div className="mt-8 flex justify-center gap-4">
                <Dialog>
                 <DialogTrigger asChild>
