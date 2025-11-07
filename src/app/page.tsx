@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -93,25 +94,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/50" />
           <div className="relative z-10 p-4">
             <div className="mt-8 flex justify-center gap-4">
-               <Dialog>
-                <DialogTrigger asChild>
-                   <Button size="lg">
-                    Iniciar Orçamento
-                    <ChevronRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md rounded-lg p-0">
-                  <DialogHeader className="p-6 pb-0">
-                    <DialogTitle>Contrato Formal</DialogTitle>
-                    <DialogDescription>
-                      Preencha o formulário para um contato formal.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4 px-1">
-                    <FormalContractForm />
-                  </div>
-                </DialogContent>
-              </Dialog>
+              {/* Botão removido */}
             </div>
           </div>
         </section>
