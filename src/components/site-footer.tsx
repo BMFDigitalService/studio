@@ -11,16 +11,7 @@ export function SiteFooter() {
   return (
     <footer className="bg-secondary text-secondary-foreground">
       <div className="container py-12 px-4 md:px-6">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2">
-              <Truck className="h-7 w-7 text-primary" />
-              <span className="text-xl font-bold font-headline text-primary">Albino Logistics</span>
-            </Link>
-            <p className="text-muted-foreground">
-              Terceirize com quem entende do seu negócio. Resultados garantidos e flexibilidade total.
-            </p>
-          </div>
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-4">
             <h4 className="font-headline font-semibold">Navegação</h4>
             <ul className="space-y-2">
@@ -55,8 +46,12 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t">
-        <div className="container py-4 px-4 md:px-6 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Albino Logistics. Todos os direitos reservados.
+        <div className="container py-4 px-4 md:px-6 flex justify-between items-center text-sm text-muted-foreground">
+          <Link href="/" className="flex items-center space-x-2">
+              <Truck className="h-6 w-6 text-primary" />
+              <span className="text-lg font-bold font-headline text-primary">Albino Logistics</span>
+          </Link>
+          <span>© {new Date().getFullYear()} Albino Logistics. Todos os direitos reservados.</span>
         </div>
       </div>
     </footer>
