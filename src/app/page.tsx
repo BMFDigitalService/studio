@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TeamForm } from "@/components/team-form";
-import { ContactForm } from "@/components/contact-form";
+import { FormalContractForm } from "@/components/formal-contract-form";
 import { MessageSquare, Phone, FileText } from "lucide-react";
 
 export default function Home() {
@@ -46,7 +46,7 @@ export default function Home() {
                     <span>Contrato Formal</span>
                 </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] rounded-lg">
+            <DialogContent className="sm:max-w-md rounded-lg">
               <DialogHeader>
                 <DialogTitle>Contrato Formal</DialogTitle>
                 <DialogDescription>
@@ -54,7 +54,7 @@ export default function Home() {
                 </DialogDescription>
               </DialogHeader>
               <div className="py-4">
-                <ContactForm />
+                <FormalContractForm />
               </div>
             </DialogContent>
           </Dialog>
