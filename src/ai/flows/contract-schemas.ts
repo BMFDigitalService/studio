@@ -4,6 +4,7 @@ export const GenerateContractInputSchema = z.object({
   companyName: z.string().describe('O nome da empresa contratante.'),
   cnpj: z.string().describe('O CNPJ da empresa contratante.'),
   responsibleName: z.string().describe('O nome do responsável pela empresa contratante.'),
+  companyLocation: z.string().describe('O endereço da empresa contratante.'),
   startDate: z.string().describe('A data de início da prestação de serviços.'),
   endDate: z.string().describe('A data final da prestação de serviços.'),
   totalCost: z.string().describe('O custo total do contrato.'),

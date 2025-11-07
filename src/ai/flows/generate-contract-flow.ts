@@ -10,7 +10,8 @@ import { GenerateContractInputSchema, GenerateContractOutputSchema, type Generat
 
 
 export async function generateContract(input: GenerateContractInput): Promise<GenerateContractOutput> {
-  return generateContractFlow(input);
+  const { output } = await prompt(input);
+  return output!;
 }
 
 const prompt = ai.definePrompt({
@@ -27,6 +28,7 @@ const prompt = ai.definePrompt({
     - Nome da Empresa: {{{companyName}}}
     - CNPJ: {{{cnpj}}}
     - Responsável: {{{responsibleName}}}
+    - Endereço: {{{companyLocation}}}
 
     **Detalhes do Contrato:**
     - Período de Vigência: De {{{startDate}}} a {{{endDate}}}.
@@ -40,7 +42,7 @@ const prompt = ai.definePrompt({
     **Estrutura do Contrato:**
     Gere um contrato em formato Markdown com as seguintes seções:
 
-    1.  **PARTES CONTRATANTES:** Identifique a CONTRATANTE (com os dados fornecidos) e a CONTRATADA (Albino Logistics, CNPJ 12.345.678/0001-99).
+    1.  **PARTES CONTRATANTES:** Identifique a CONTRATANTE (com os dados fornecidos, incluindo nome, CNPJ e endereço) e a CONTRATADA (Albino Logistics, CNPJ 12.345.678/0001-99).
     2.  **OBJETO DO CONTRATO:** Descreva claramente os serviços que serão prestados, com base nos 'Serviços Contratados'.
     3.  **PRAZO:** Especifique o período de vigência do contrato usando as datas de início e fim.
     4.  **VALOR E FORMA DE PAGAMENTO:** Mencione o 'Custo Total' e especifique que o pagamento será realizado via PIX ou transferência bancária em até 5 dias úteis após a emissão da nota fiscal.
@@ -53,22 +55,10 @@ const prompt = ai.definePrompt({
         - Garantir um local seguro para a execução dos trabalhos.
         - Efetuar o pagamento nos prazos acordados.
     7.  **RESCISÃO:** Defina as condições para rescisão, como quebra de qualquer cláusula contratual ou acordo mútuo, com notificação prévia de 15 dias.
-    8.  **FORO:** Defina o foro da comarca da capital do estado da CONTRATADA para dirimir quaisquer dúvidas.
+    8.  **FORO:** Defina o foro da comarca de {{{companyLocation}}} para dirimir quaisquer dúvidas.
     9.  **ASSINATURAS:** Inclua espaços para as assinaturas dos representantes legais de ambas as partes.
 
     O tom deve ser formal e profissional. O objetivo é criar um documento juridicamente sólido e equilibrado.
     Formate a saída como um único bloco de texto em Markdown.
   `,
 });
-
-const generateContractFlow = ai.defineFlow(
-  {
-    name: 'generateContractFlow',
-    inputSchema: GenerateContractInputSchema,
-    outputSchema: GenerateContractOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    return output!;
-  }
-);

@@ -71,6 +71,9 @@ const formSchema = z.object({
   responsibleName: z.string().min(2, {
     message: "O nome do responsável deve ter pelo menos 2 caracteres.",
   }),
+  companyLocation: z.string().min(5, {
+    message: "A localização deve ter pelo menos 5 caracteres.",
+  }),
   startDate: z.date({
     required_error: "A data de início é obrigatória.",
   }),
@@ -108,6 +111,7 @@ export function FormalContractForm() {
       companyName: "",
       cnpj: "",
       responsibleName: "",
+      companyLocation: "",
       services: [],
       quantityCarga: "1",
       quantityDescarga: "1",
@@ -334,6 +338,19 @@ export function FormalContractForm() {
                       <FormLabel>Nome do Responsável</FormLabel>
                       <FormControl>
                           <Input placeholder="Nome do responsável pela contratação" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                      </FormItem>
+                  )}
+                  />
+                  <FormField
+                  control={form.control}
+                  name="companyLocation"
+                  render={({ field }) => (
+                      <FormItem>
+                      <FormLabel>Localização da Empresa</FormLabel>
+                      <FormControl>
+                          <Input placeholder="Cidade e estado" {...field} />
                       </FormControl>
                       <FormMessage />
                       </FormItem>
