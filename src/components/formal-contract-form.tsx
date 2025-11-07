@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 const services = [
   { id: "carga", label: "Carga" },
@@ -51,6 +52,8 @@ const formSchema = z.object({
   numberOfCollaborators: z.string().optional(),
 });
 
+type ServiceId = (typeof services)[number]["id"];
+
 export function FormalContractForm() {
   const { toast } = useToast();
 
@@ -69,6 +72,19 @@ export function FormalContractForm() {
   });
 
   const watchedServices = form.watch("services");
+  const watchedQuantities = form.watch([
+    "quantityCarga",
+    "quantityDescarga",
+    "quantityTransbordo",
+    "numberOfCollaborators",
+  ]);
+
+  const serviceQuantities: Record<ServiceId, string | undefined> = {
+    carga: watchedQuantities[0],
+    descarga: watchedQuantities[1],
+    transbordo: watchedQuantities[2],
+    diaria: watchedQuantities[3],
+  };
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     console.log(data);
@@ -78,6 +94,32 @@ export function FormalContractForm() {
     });
     form.reset();
   }
+
+  const getQuantityFieldName = (serviceId: ServiceId) => {
+    switch (serviceId) {
+      case "carga":
+        return "quantityCarga";
+      case "descarga":
+        return "quantityDescarga";
+      case "transbordo":
+        return "quantityTransbordo";
+      case "diaria":
+        return "numberOfCollaborators";
+    }
+  };
+
+  const getQuantityLabel = (serviceId: ServiceId) => {
+    switch (serviceId) {
+      case "carga":
+        return "Quantidade de Cargas";
+      case "descarga":
+        return "Quantidade de Descargas";
+      case "transbordo":
+        return "Quantidade de Transbordos";
+      case "diaria":
+        return "Quantidade de Colaboradores";
+    }
+  };
 
   return (
     <Form {...form}>
@@ -132,161 +174,81 @@ export function FormalContractForm() {
                   Selecione os serviços que você precisa.
                 </FormDescription>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                {services.map((item) => (
-                  <FormField
-                    key={item.id}
-                    control={form.control}
-                    name="services"
-                    render={({ field }) => {
-                      return (
-                        <FormItem
-                          key={item.id}
-                          className="flex flex-row items-start space-x-3 space-y-0"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(item.id)}
-                              onCheckedChange={(checked) => {
-                                return checked
-                                  ? field.onChange([...field.value, item.id])
-                                  : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item.id
-                                      )
-                                    );
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {item.label}
-                          </FormLabel>
-                        </FormItem>
-                      );
-                    }}
-                  />
-                ))}
+              <div className="space-y-4">
+                {services.map((item) => {
+                  const isSelected = watchedServices.includes(item.id);
+                  const quantityFieldName = getQuantityFieldName(item.id);
+                  const quantityValue = serviceQuantities[item.id];
+
+                  return (
+                    <div key={item.id}>
+                      <FormField
+                        control={form.control}
+                        name="services"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(item.id)}
+                                onCheckedChange={(checked) => {
+                                  const newValue = checked
+                                    ? [...field.value, item.id]
+                                    : field.value?.filter((value) => value !== item.id);
+                                  field.onChange(newValue);
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className={cn("font-normal flex-grow", isSelected && "font-medium")}>
+                              {item.label}
+                            </FormLabel>
+                            {isSelected && quantityValue && (
+                              <span className="text-sm font-medium text-muted-foreground ml-auto pr-2">
+                                Qtd: {quantityValue}
+                              </span>
+                            )}
+                          </FormItem>
+                        )}
+                      />
+                      {isSelected && (
+                         <div className="pt-2 pl-7">
+                          <FormField
+                            control={form.control}
+                            name={quantityFieldName}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs text-muted-foreground">{getQuantityLabel(item.id)}</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione a quantidade" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {[...Array(10)].map((_, i) => (
+                                      <SelectItem key={i + 1} value={`${i + 1}`}>
+                                        {i + 1}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               <FormMessage />
             </FormItem>
           )}
         />
-        {watchedServices.includes("carga") && (
-          <FormField
-            control={form.control}
-            name="quantityCarga"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Quantidade de Cargas</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a quantidade" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {[...Array(10)].map((_, i) => (
-                      <SelectItem key={i + 1} value={`${i + 1}`}>
-                        {i + 1}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        {watchedServices.includes("descarga") && (
-          <FormField
-            control={form.control}
-            name="quantityDescarga"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Quantidade de Descargas</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a quantidade" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {[...Array(10)].map((_, i) => (
-                      <SelectItem key={i + 1} value={`${i + 1}`}>
-                        {i + 1}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        {watchedServices.includes("transbordo") && (
-          <FormField
-            control={form.control}
-            name="quantityTransbordo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Quantidade de Transbordos</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a quantidade" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {[...Array(10)].map((_, i) => (
-                      <SelectItem key={i + 1} value={`${i + 1}`}>
-                        {i + 1}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        {watchedServices.includes("diaria") && (
-          <FormField
-            control={form.control}
-            name="numberOfCollaborators"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Quantidade de Colaboradores</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a quantidade" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {[...Array(10)].map((_, i) => (
-                      <SelectItem key={i + 1} value={`${i + 1}`}>
-                        {i + 1}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+        
         <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
           Enviar Proposta
         </Button>
