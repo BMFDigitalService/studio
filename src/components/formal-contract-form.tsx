@@ -45,6 +45,9 @@ const formSchema = z.object({
   services: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "Você deve selecionar pelo menos um serviço.",
   }),
+  quantityCarga: z.string().optional(),
+  quantityDescarga: z.string().optional(),
+  quantityTransbordo: z.string().optional(),
   numberOfCollaborators: z.string().optional(),
 });
 
@@ -58,6 +61,9 @@ export function FormalContractForm() {
       cnpj: "",
       responsibleName: "",
       services: [],
+      quantityCarga: "1",
+      quantityDescarga: "1",
+      quantityTransbordo: "1",
       numberOfCollaborators: "1",
     },
   });
@@ -165,6 +171,93 @@ export function FormalContractForm() {
             </FormItem>
           )}
         />
+        {watchedServices.includes("carga") && (
+          <FormField
+            control={form.control}
+            name="quantityCarga"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantidade de Cargas</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a quantidade" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {[...Array(10)].map((_, i) => (
+                      <SelectItem key={i + 1} value={`${i + 1}`}>
+                        {i + 1}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {watchedServices.includes("descarga") && (
+          <FormField
+            control={form.control}
+            name="quantityDescarga"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantidade de Descargas</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a quantidade" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {[...Array(10)].map((_, i) => (
+                      <SelectItem key={i + 1} value={`${i + 1}`}>
+                        {i + 1}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {watchedServices.includes("transbordo") && (
+          <FormField
+            control={form.control}
+            name="quantityTransbordo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantidade de Transbordos</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a quantidade" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {[...Array(10)].map((_, i) => (
+                      <SelectItem key={i + 1} value={`${i + 1}`}>
+                        {i + 1}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         {watchedServices.includes("diaria") && (
           <FormField
             control={form.control}
