@@ -10,15 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { TeamForm } from "@/components/team-form";
 import { FormalContractForm } from "@/components/formal-contract-form";
-import { ChevronRight, MessageSquare, Phone, FileText } from "lucide-react";
 import Image from "next/image";
 import { placeholderImages } from "@/lib/placeholder-images";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Icons } from "@/components/icons";
 
 export default function Home() {
@@ -41,39 +34,7 @@ export default function Home() {
               <a href="#contact" className="text-foreground/80 hover:text-foreground">Contato</a>
             </nav>
             <div className="flex items-center gap-4">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm">Fazer Parte da Equipe</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] rounded-lg">
-                  <DialogHeader>
-                    <DialogTitle>Fazer Parte da Equipe</DialogTitle>
-                    <DialogDescription>
-                      Preencha o formulário abaixo para fazer parte da equipe.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <TeamForm />
-                  </div>
-                </DialogContent>
-              </Dialog>
-              
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="sm">Contratar Serviços</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md rounded-lg p-0">
-                  <DialogHeader className="p-6 pb-0">
-                    <DialogTitle>Contrato Formal</DialogTitle>
-                    <DialogDescription>
-                      Preencha o formulário para um contato formal.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4 px-1">
-                    <FormalContractForm />
-                  </div>
-                </DialogContent>
-              </Dialog>
+              {/* Botões movidos para a seção hero */}
             </div>
           </div>
         </div>
@@ -93,8 +54,39 @@ export default function Home() {
           )}
           <div className="absolute inset-0 bg-black/50" />
           <div className="relative z-10 p-4">
-            <div className="mt-8 flex justify-center gap-4">
-              {/* Botão removido */}
+            <div className="flex flex-col items-center justify-center gap-4">
+               <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg">Contratar Serviços</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md rounded-lg p-0">
+                  <DialogHeader className="p-6 pb-0">
+                    <DialogTitle>Contrato Formal</DialogTitle>
+                    <DialogDescription>
+                      Preencha o formulário para um contato formal.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4 px-1">
+                    <FormalContractForm />
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg" className="bg-transparent text-white border-white hover:bg-white hover:text-black">Fazer Parte da Equipe</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] rounded-lg">
+                  <DialogHeader>
+                    <DialogTitle>Fazer Parte da Equipe</DialogTitle>
+                    <DialogDescription>
+                      Preencha o formulário abaixo para fazer parte da equipe.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <TeamForm />
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </section>
