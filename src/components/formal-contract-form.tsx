@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import { format, eachDayOfInterval, isSaturday, isSunday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
-import { jsPDF } from "jspdf";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,22 +30,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { ChevronDown, CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
-import { generateContract } from "@/ai/flows/generate-contract-flow";
-import type { GenerateContractInput } from "@/ai/flows/contract-schemas";
 
 const services = [
   { id: "carga", label: "Carga" },
@@ -103,9 +92,7 @@ export function FormalContractForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [openSelectors, setOpenSelectors] = useState<Record<string, boolean>>({});
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [contractText, setContractText] = useState("");
-  const [isContractDialogOpen, setIsContractDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -164,107 +151,57 @@ export function FormalContractForm() {
   }, [watchedServices, serviceQuantities, watchedStartDate, watchedEndDate, form]);
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    setIsGenerating(true);
+    setIsSubmitting(true);
     try {
-        const budget: GenerateContractInput = {
-            ...data,
-            startDate: format(data.startDate, "dd/MM/yyyy", { locale: ptBR }),
-            endDate: format(data.endDate, "dd/MM/yyyy", { locale: ptBR }),
-            totalCost: totalCost.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-            }),
-            servicesDetails: data.services.map(serviceId => {
-                const id = serviceId as ServiceId;
-                const price = servicePrices[id];
-                
-                if (id === 'diaria') {
-                    const collaborators = serviceQuantities.diaria;
-                    const days = (data.startDate && data.endDate) ? calculateBusinessDays(data.startDate, data.endDate) : 0;
-                    return {
-                        service: services.find(s => s.id === id)?.label,
-                        quantity: `${collaborators} colaborador(es) por ${days} dia(s) úteis`,
-                        subtotal: (price * collaborators * days).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-                    }
-                }
-                
-                const quantity = serviceQuantities[id];
+        const servicesDetails = data.services.map(serviceId => {
+            const id = serviceId as ServiceId;
+            const price = servicePrices[id];
+            
+            if (id === 'diaria') {
+                const collaborators = serviceQuantities.diaria;
+                const days = (data.startDate && data.endDate) ? calculateBusinessDays(data.startDate, data.endDate) : 0;
                 return {
                     service: services.find(s => s.id === id)?.label,
-                    quantity,
-                    subtotal: (quantity * price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+                    quantity: `${collaborators} colaborador(es) por ${days} dia(s) úteis`,
+                    subtotal: (price * collaborators * days).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
                 }
-            })
-        };
+            }
+            
+            const quantity = serviceQuantities[id];
+            return {
+                service: services.find(s => s.id === id)?.label,
+                quantity: String(quantity),
+                subtotal: (quantity * price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+            }
+        });
 
-        const result = await generateContract(budget);
+        const contractData = {
+          ...data,
+          startDate: format(data.startDate, "dd/MM/yyyy", { locale: ptBR }),
+          endDate: format(data.endDate, "dd/MM/yyyy", { locale: ptBR }),
+          totalCost: totalCost.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+          }),
+          servicesDetails,
+        };
         
-        setContractText(result.contractText);
-        setIsContractDialogOpen(true);
+        // Save to localStorage
+        localStorage.setItem('contractData', JSON.stringify(contractData));
+
+        router.push('/thank-you');
 
     } catch (error) {
-        console.error("Erro ao gerar contrato:", error);
+        console.error("Erro ao processar formulário:", error);
         toast({
             variant: "destructive",
-            title: "Erro ao gerar contrato",
-            description: "Ocorreu um problema ao gerar o contrato. Por favor, tente novamente.",
+            title: "Erro ao enviar",
+            description: "Ocorreu um problema ao processar sua solicitação. Por favor, tente novamente.",
         });
     } finally {
-        setIsGenerating(false);
+        setIsSubmitting(false);
     }
   }
-
-  const handleDownload = () => {
-    if (!contractText) return;
-    try {
-      const doc = new jsPDF({
-        orientation: "p",
-        unit: "mm",
-        format: "a4",
-      });
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-
-      const margin = 20;
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const usableWidth = pageWidth - 2 * margin;
-
-      // Process contract text to handle markdown-like syntax
-      const cleanedText = contractText
-        .replace(/^#+ (.*$)/gim, '\n$1\n') // Add space around headers
-        .replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold markdown
-
-      const textLines = doc.splitTextToSize(cleanedText, usableWidth);
-
-      let y = margin;
-      const pageHeight = doc.internal.pageSize.getHeight();
-
-      for (let i = 0; i < textLines.length; i++) {
-        if (y + 10 > pageHeight - margin) { // Check if new line exceeds page height
-          doc.addPage();
-          y = margin;
-        }
-        doc.text(textLines[i], margin, y);
-        y += 7; // Line height
-      }
-
-      doc.save("contrato-de-servicos.pdf");
-      setIsContractDialogOpen(false);
-      router.push('/thank-you');
-      
-    } catch (e) {
-      console.error("Print error:", e);
-      toast({
-        variant: "destructive",
-        title: "Erro ao gerar PDF",
-        description:
-          e instanceof Error
-            ? e.message
-            : "Ocorreu um problema ao tentar gerar o PDF do contrato.",
-      });
-    }
-  };
 
   const getQuantityFieldName = (serviceId: ServiceId) => {
     switch (serviceId) {
@@ -295,17 +232,6 @@ export function FormalContractForm() {
   const toggleSelector = (serviceId: ServiceId) => {
     setOpenSelectors(prev => ({ ...prev, [serviceId]: !prev[serviceId] }));
   };
-
-  const contractHtml = contractText
-      .replace(/^(#+) (.*$)/gim, (match, hashes, content) => {
-        const level = hashes.length;
-        return `<h${level} class="font-bold text-${4-level}xl mt-4 mb-2">${content}</h${level}>`;
-      })
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/^- (.*)/gm, '<li>$1</li>')
-      .replace(/(\n?<li>.*<\/li>)/s, '<ul>$1</ul>')
-      .replace(/\n/g, '<br />');
-
 
   return (
     <>
@@ -599,35 +525,20 @@ export function FormalContractForm() {
               </div>
           </ScrollArea>
 
-          <Button type="submit" disabled={isGenerating} className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
-            {isGenerating ? (
+          <Button type="submit" disabled={isSubmitting} className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
+            {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Gerando Contrato...
+                Processando...
               </>
             ) : (
-              "Aceitar Proposta"
+              "Ir para Agendamento"
             )}
           </Button>
         </form>
       </Form>
-
-      <Dialog open={isContractDialogOpen} onOpenChange={setIsContractDialogOpen}>
-          <DialogContent className="max-w-4xl h-[90vh]">
-              <DialogHeader>
-                  <DialogTitle>Contrato de Prestação de Serviços</DialogTitle>
-              </DialogHeader>
-              <ScrollArea className="h-full">
-                <div className="p-6 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: contractHtml }} />
-              </ScrollArea>
-              <DialogFooter>
-                  <DialogClose asChild>
-                      <Button variant="outline">Fechar</Button>
-                  </DialogClose>
-                  <Button onClick={handleDownload}>Baixar PDF</Button>
-              </DialogFooter>
-          </DialogContent>
-      </Dialog>
     </>
   );
 }
+
+    
