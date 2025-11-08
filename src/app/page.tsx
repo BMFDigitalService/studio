@@ -37,10 +37,10 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/50" />
           <div className="relative z-10 p-4 flex flex-col items-center gap-6">
             <div className="flex flex-col items-center">
-              <span className="text-4xl font-bold tracking-tighter text-white leading-none font-heading">
+              <span className="text-6xl font-heading tracking-wider text-white">
                 ALBINO
               </span>
-              <span className="text-xs font-light tracking-widest text-white/80">
+              <span className="text-xs font-light tracking-widest text-white/80 -mt-1">
                 CARGA/DESCARGA
               </span>
             </div>
