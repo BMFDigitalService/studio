@@ -31,7 +31,6 @@ export default function Home() {
               alt={heroImage.description}
               layout="fill"
               objectFit="contain"
-              className="w-full h-full"
               data-ai-hint={heroImage.imageHint}
             />
           )}
