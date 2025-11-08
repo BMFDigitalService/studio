@@ -24,13 +24,14 @@ export default function Home() {
     <div className="flex flex-col min-h-dvh bg-background text-foreground">
       
       <main className="flex-grow">
-        <section className="relative h-dvh flex items-center justify-center text-center">
+        <section className="relative h-dvh flex items-center justify-center text-center overflow-hidden">
           {heroImage && (
             <Image
               src={heroImage.imageUrl}
               alt={heroImage.description}
-              fill
-              className="object-contain"
+              layout="fill"
+              objectFit="contain"
+              className="w-full h-full"
               data-ai-hint={heroImage.imageHint}
             />
           )}
