@@ -14,7 +14,7 @@ export default function ContractPreviewPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [contractText, setContractText] = useState('');
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     try {
@@ -50,34 +50,32 @@ export default function ContractPreviewPage() {
     }
   }, [router, toast]);
 
-  const handleProceed = () => {
-    router.push('/thank-you');
-  };
-
-  const handleDownloadPdf = () => {
-    setIsDownloading(true);
+  const handleAgreeAndProceed = () => {
+    setIsProcessing(true);
     try {
+      // 1. Download PDF
       const doc = new jsPDF();
-      
       const plainText = contractText
         .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold
         .replace(/(\*|_)(.*?)\1/g, '$2')   // Italic
         .replace(/#{1,6}\s/g, '');        // Headers
-
       const splitText = doc.splitTextToSize(plainText, 180);
       doc.text(splitText, 15, 20);
       doc.save('contrato_prestacao_servicos.pdf');
 
+      // 2. Navigate to next page
+      router.push('/thank-you');
+
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
+      console.error("Erro ao processar:", error);
       toast({
         variant: "destructive",
-        title: "Erro ao baixar PDF",
-        description: "Ocorreu um problema ao gerar o arquivo PDF. Por favor, tente novamente.",
+        title: "Erro",
+        description: "Ocorreu um problema ao baixar o PDF ou navegar. Por favor, tente novamente.",
       });
-    } finally {
-      setIsDownloading(false);
+      setIsProcessing(false);
     }
+    // No need to set isProcessing back to false if navigation is successful
   };
 
   const formattedContractText = contractText
@@ -111,19 +109,16 @@ export default function ContractPreviewPage() {
             <div className="whitespace-pre-wrap font-sans text-sm">{formattedContractText}</div>
           </ScrollArea>
         </CardContent>
-        <CardFooter className="flex-col-reverse gap-4 sm:flex-row sm:justify-end sm:gap-2">
-          <Button variant="outline" onClick={handleDownloadPdf} disabled={isDownloading}>
-             {isDownloading ? (
+        <CardFooter className="flex justify-end">
+           <Button onClick={handleAgreeAndProceed} disabled={isProcessing}>
+            {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Baixando...
+                Processando...
               </>
             ) : (
-              "Baixar Contrato (PDF)"
+              "Concordar"
             )}
-          </Button>
-          <Button onClick={handleProceed}>
-            Concordo e quero Agendar a Visita
           </Button>
         </CardFooter>
       </Card>
