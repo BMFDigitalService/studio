@@ -220,7 +220,7 @@ Aguardo a confirmação. Obrigado!
                       Gerando Mensagem...
                     </>
                   ) : (
-                    "Agendar e Enviar via WhatsApp"
+                    "Agendar visita"
                   )}
                 </Button>
               </form>
