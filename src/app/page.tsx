@@ -30,7 +30,7 @@ export default function Home() {
               src={heroImage.imageUrl}
               alt={heroImage.description}
               layout="fill"
-              objectFit="contain"
+              objectFit="cover"
               data-ai-hint={heroImage.imageHint}
             />
           )}
