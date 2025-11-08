@@ -22,7 +22,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground">
-      <header className="fixed top-0 left-0 right-0 z-50">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -60,7 +60,7 @@ export default function Home() {
           <div className="relative z-10 p-4 flex flex-col items-center gap-4">
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="lg" className="min-w-[280px]">Contratar Serviços</Button>
+                <Button variant="outline" size="lg" className="bg-transparent text-white border-white hover:bg-white hover:text-black min-w-[280px]">Contratar Serviços</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md rounded-lg p-0">
                 <DialogHeader className="p-6 pb-0">
