@@ -59,7 +59,6 @@ export default function ContractPreviewPage() {
     try {
       const doc = new jsPDF();
       
-      // Remove Markdown for PDF and split into lines
       const plainText = contractText
         .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold
         .replace(/(\*|_)(.*?)\1/g, '$2')   // Italic
@@ -80,6 +79,11 @@ export default function ContractPreviewPage() {
       setIsDownloading(false);
     }
   };
+
+  const formattedContractText = contractText
+    .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold
+    .replace(/(\*|_)(.*?)\1/g, '$2')   // Italic
+    .replace(/#{1,6}\s/g, '');        // Headers
 
   if (!contractText) {
     return (
@@ -104,7 +108,7 @@ export default function ContractPreviewPage() {
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[60vh] rounded-md border bg-background p-4">
-            <pre className="whitespace-pre-wrap font-sans text-sm">{contractText}</pre>
+            <div className="whitespace-pre-wrap font-sans text-sm">{formattedContractText}</div>
           </ScrollArea>
         </CardContent>
         <CardFooter className="flex-col-reverse gap-4 sm:flex-row sm:justify-end sm:gap-2">
