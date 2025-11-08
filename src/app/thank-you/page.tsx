@@ -6,10 +6,10 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CheckCircle, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
@@ -25,7 +25,26 @@ type AddressFormData = z.infer<typeof addressSchema>;
 
 export default function ThankYouPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasContractData, setHasContractData] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('contractData');
+        if (!data) {
+            toast({
+                variant: 'destructive',
+                title: 'Acesso Inválido',
+                description: 'Você precisa gerar um contrato antes de agendar uma visita.',
+            });
+            router.push('/');
+        } else {
+            setHasContractData(true);
+        }
+    }
+  }, [router, toast]);
+
 
   const form = useForm<AddressFormData>({
     resolver: zodResolver(addressSchema),
@@ -89,6 +108,9 @@ Aguardo a confirmação. Obrigado!
       
       localStorage.removeItem('contractData');
       form.reset();
+      
+      // Optionally redirect to a final confirmation page or back to home
+      // router.push('/');
 
     } catch (error) {
       console.error('Erro ao gerar link do WhatsApp:', error);
@@ -102,13 +124,13 @@ Aguardo a confirmação. Obrigado!
     }
   };
 
-  useEffect(() => {
-    // Clear local storage on component unmount if needed, e.g. user navigates away
-    return () => {
-      // You might want to be careful with this, as it could clear data if the user accidentally navigates away
-      // localStorage.removeItem('contractData');
-    };
-  }, []);
+  if (!hasContractData) {
+      return (
+          <div className="flex min-h-dvh flex-col items-center justify-center bg-background p-4">
+              <Loader2 className="h-16 w-16 animate-spin text-primary" />
+          </div>
+      );
+  }
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background p-4">
@@ -118,7 +140,7 @@ Aguardo a confirmação. Obrigado!
           Quase lá!
         </h1>
         <p className="text-lg text-muted-foreground">
-          Agora, preencha seu endereço para agendarmos a visita de assinatura do contrato.
+          Seu contrato foi gerado. Agora, preencha seu endereço para agendarmos a visita de assinatura.
         </p>
         
         <div className="text-left bg-card p-6 rounded-lg border shadow-sm">
@@ -208,5 +230,3 @@ Aguardo a confirmação. Obrigado!
     </div>
   );
 }
-
-    

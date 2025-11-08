@@ -36,6 +36,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/
 import { ScrollArea } from "./ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
+import { generateContract } from "@/ai/flows/generate-contract-flow";
 
 const services = [
   { id: "carga", label: "Carga" },
@@ -175,28 +176,41 @@ export function FormalContractForm() {
             }
         });
 
-        const contractData = {
-          ...data,
+        const contractDataForAI = {
+          companyName: data.companyName,
+          cnpj: data.cnpj,
+          responsibleName: data.responsibleName,
+          companyLocation: data.companyLocation,
           startDate: format(data.startDate, "dd/MM/yyyy", { locale: ptBR }),
           endDate: format(data.endDate, "dd/MM/yyyy", { locale: ptBR }),
           totalCost: totalCost.toLocaleString("pt-BR", {
               style: "currency",
               currency: "BRL",
           }),
-          servicesDetails,
+          servicesDetails: servicesDetails.map(s => ({
+            service: s.service,
+            quantity: s.quantity,
+            subtotal: s.subtotal,
+          })),
         };
-        
-        // Save to localStorage
-        localStorage.setItem('contractData', JSON.stringify(contractData));
 
-        router.push('/thank-you');
+        const { contractText } = await generateContract(contractDataForAI);
+        
+        const contractDataForStorage = {
+          ...contractDataForAI,
+          contractText
+        }
+        
+        localStorage.setItem('contractData', JSON.stringify(contractDataForStorage));
+
+        router.push('/contract-preview');
 
     } catch (error) {
         console.error("Erro ao processar formulário:", error);
         toast({
             variant: "destructive",
-            title: "Erro ao enviar",
-            description: "Ocorreu um problema ao processar sua solicitação. Por favor, tente novamente.",
+            title: "Erro ao gerar contrato",
+            description: "Ocorreu um problema ao gerar o contrato. Por favor, tente novamente.",
         });
     } finally {
         setIsSubmitting(false);
@@ -529,10 +543,10 @@ export function FormalContractForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processando...
+                Gerando Contrato...
               </>
             ) : (
-              "Ir para Agendamento"
+              "Gerar e Visualizar Contrato"
             )}
           </Button>
         </form>
@@ -540,5 +554,3 @@ export function FormalContractForm() {
     </>
   );
 }
-
-    
