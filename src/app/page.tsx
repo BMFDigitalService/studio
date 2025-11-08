@@ -26,7 +26,7 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Image src="/logo.jpg" alt="Albino Logotipo" width={40} height={40} />
+              <Image src="/logo.jpg" alt="Albino Logotipo" width={40} height={40} unoptimized />
               <Link href="/" className="flex flex-col items-center">
                 <span className="text-xs font-light tracking-widest text-white/80">
                   CARGA/DESCARGA
