@@ -56,9 +56,12 @@ export default function ContractPreviewPage() {
       // 1. Download PDF
       const doc = new jsPDF();
       const plainText = contractText
-        .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold
-        .replace(/(\*|_)(.*?)\1/g, '$2')   // Italic
-        .replace(/#{1,6}\s/g, '');        // Headers
+        .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
+        .replace(/__(.*?)__/g, '$1')   // Bold
+        .replace(/\*(.*?)\*/g, '$1')     // Italic
+        .replace(/_(.*?)_/g, '$1')     // Italic
+        .replace(/#{1,6}\s/g, '');      // Headers
+
       const splitText = doc.splitTextToSize(plainText, 180);
       doc.text(splitText, 15, 20);
       doc.save('contrato_prestacao_servicos.pdf');
@@ -75,12 +78,13 @@ export default function ContractPreviewPage() {
       });
       setIsProcessing(false);
     }
-    // No need to set isProcessing back to false if navigation is successful
   };
 
   const formattedContractText = contractText
-    .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold
-    .replace(/(\*|_)(.*?)\1/g, '$2')   // Italic
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
+    .replace(/__(.*?)__/g, '$1')   // Bold
+    .replace(/\*(.*?)\*/g, '$1')     // Italic
+    .replace(/_(.*?)_/g, '$1')     // Italic
     .replace(/#{1,6}\s/g, '');        // Headers
 
   if (!contractText) {
