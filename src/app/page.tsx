@@ -26,12 +26,12 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10"></div> {/* Espaço para a imagem */}
+              <Image src="/logo.png" alt="Albino Logotipo" width={40} height={40} className="rounded-md" />
               <Link href="/" className="flex flex-col items-center">
                 <span className="text-xs font-light tracking-widest text-white/80">
                   CARGA/DESCARGA
                 </span>
-                <span className="text-4xl font-bold tracking-tighter text-white leading-none">
+                <span className="text-4xl font-bold tracking-tighter text-white leading-none font-heading">
                   ALBINO
                 </span>
               </Link>
