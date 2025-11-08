@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -32,8 +32,6 @@ const formSchema = z.object({
 });
 
 export function TeamForm() {
-  const { toast } = useToast();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,11 +43,12 @@ export function TeamForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: "Cadastro enviado com sucesso!",
-      description: "Analisaremos seus dados e entraremos em contato.",
-    });
+    const { name, city, neighborhood, pixKey } = values;
+    const text = `Olá Gustavo, me chamo ${name}. Gostaria de fazer parte da equipe ALBINO, Moro em ${city} no bairro ${neighborhood} Caso De tudo certo minha chave pix é ${pixKey} para futuras transações.`;
+    const encodedText = encodeURIComponent(text);
+    const whatsappUrl = `https://wa.me/5547997292357?text=${encodedText}`;
+    
+    window.open(whatsappUrl, '_blank');
     form.reset();
   }
 
